@@ -1,0 +1,17 @@
+# Virtual Environment
+nenv/
+__pycache__/
+*.pyc
+
+# Environment Variables
+.env
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# NLTK data
+nltk_data/
+
+# Logs
+*.log
