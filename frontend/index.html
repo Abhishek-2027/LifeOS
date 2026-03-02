@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LifeOS Frontend Demo</title>
+  <link rel="stylesheet" href="https://unpkg.com/modern-normalize/modern-normalize.css" />
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 2rem auto; background:#fafafa; color:#333 }
+    input, button, textarea { font-size: 1rem; padding: .5rem; margin: .25rem 0; width:100%; border:1px solid #ccc; border-radius:4px; }
+    button { cursor:pointer; background:#007bff; color:#fff; border:none; }
+    button:hover { background:#0056b3; }
+    .row { display:flex; gap:.5rem; flex-wrap:wrap; }
+    .col { flex:1 }
+    .card { background:#fff; padding:1rem 1.5rem; margin:1rem 0; border-radius:6px; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
+    .subcard { margin: .5rem 0; padding: .5rem; border:1px solid #eee; border-radius:4px; }
+    h2 { margin-top:0 }
+    pre { background:#f6f8fa; padding:1rem; overflow:auto; max-height:200px; }
+
+  </style>
+</head>
+<body>
+  <h1>LifeOS Frontend Demo</h1>
+  <p>Demonstration UI for register, login, add memory, search memory, and more.</p>
+
+  <section class="card">
+    <h2>Account</h2>
+    <input id="email" placeholder="email@example.com" />
+    <input id="password" placeholder="password" type="password" />
+    <div class="row">
+      <button id="btnRegister">Register</button>
+      <button id="btnLogin">Login</button>
+    </div>
+    <p>Token: <code id="tokenPreview">(none)</code></p>
+  </section>
+
+  <section class="card">
+    <h2>Memory</h2>
+    <div class="subcard">
+      <h3>Add</h3>
+      <textarea id="memoryText" rows="2" placeholder="Memory text..."></textarea>
+      <div class="row">
+        <input id="memoryType" placeholder="episodic or semantic" value="episodic" />
+        <input id="memoryEmotion" placeholder="positive|neutral|negative" value="positive" />
+        <input id="memoryImportance" placeholder="0.0-1.0" value="0.8" />
+      </div>
+      <button id="btnAddMemory">Add Memory</button>
+      <pre id="addResult"></pre>
+    </div>
+    <div class="subcard">
+      <h3>Search</h3>
+      <input id="searchQuery" placeholder="search query" />
+      <button id="btnSearch">Search</button>
+      <pre id="searchResult"></pre>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Documents</h2>
+    <input type="file" id="docFile" />
+    <button id="btnUploadDoc">Upload</button>
+    <pre id="docResult"></pre>
+  </section>
+
+  <section class="card">
+    <h2>Emails</h2>
+    <div class="row">
+      <button id="btnSyncEmails">Sync Emails</button>
+      <button id="btnListEmails">List Emails</button>
+    </div>
+    <pre id="emailResult"></pre>
+  </section>
+
+  <section class="card">
+    <h2>Dashboard</h2>
+    <button id="btnDashboard">Refresh Overview</button>
+    <pre id="dashboardResult"></pre>
+  </section>
+
+  <section class="card">
+    <h2>Agents</h2>
+    <div class="row">
+      <button id="btnRunEmailAgent">Run Email Agent</button>
+      <button id="btnRunMonitoring">Run Monitoring Agent</button>
+    </div>
+    <pre id="agentResult"></pre>
+  </section>
+
+  <section class="card">
+    <h2>Reasoning</h2>
+    <input id="reasonQuery" placeholder="Ask something..." />
+    <button id="btnReason">Analyze</button>
+    <pre id="reasonResult"></pre>
+  </section>
+
+  <script src="./app.js"></script>
+</body>
+</html>

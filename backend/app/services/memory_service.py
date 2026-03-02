@@ -4,6 +4,7 @@ import json
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models.memory import Memory
+from app.services.embedding_service import EmbeddingService
 
 
 class MemoryService:
@@ -32,6 +33,17 @@ class MemoryService:
         db.add(memory)
         await db.commit()
         await db.refresh(memory)
+        
+        # Try to generate embedding for the memory
+        embedding = await EmbeddingService.get_embedding(memory.text)
+        if embedding:
+            try:
+                meta = json.loads(memory.meta_data or "{}")
+                meta["embedding"] = embedding
+                memory.meta_data = json.dumps(meta)
+                await db.commit()
+            except:
+                pass
 
         return {
             "id": memory.id,
@@ -65,16 +77,53 @@ class MemoryService:
             if query_lower in m.text.lower()
         ]
         
-        # Return top k matches
-        return [
-            {
-                "id": m.id,
-                "text": m.text,
-                "memory_type": m.memory_type,
-                "emotion": m.emotion,
-                "importance": m.importance,
-                "similarity_score": 0.9,  # Dummy score for text match
-                "created_at": str(m.created_at) if m.created_at else None,
-            }
-            for m in matching_memories[:k]
-        ]
+        # Try semantic search first
+        query_embedding = await EmbeddingService.get_embedding(query)
+        memory_results = []
+        
+        if query_embedding:
+            # Compute similarity scores
+            scored = []
+            for m in all_memories:
+                sim = 0.0
+                if m.meta_data:
+                    try:
+                        meta = json.loads(m.meta_data)
+                        if "embedding" in meta:
+                            sim = EmbeddingService.cosine_similarity(query_embedding, meta["embedding"])
+                    except:
+                        pass
+                scored.append((m, sim))
+            
+            scored.sort(key=lambda x: x[1], reverse=True)
+            memory_results = [
+                {
+                    "id": m.id,
+                    "text": m.text,
+                    "memory_type": m.memory_type,
+                    "emotion": m.emotion,
+                    "importance": m.importance,
+                    "similarity_score": round(s, 2),
+                    "created_at": str(m.created_at) if m.created_at else None,
+                }
+                for m, s in scored[:k] if s > 0.0
+            ]
+        
+        # Fallback to text search
+        if not memory_results:
+            query_lower = query.lower()
+            matching = [m for m in all_memories if query_lower in m.text.lower()]
+            memory_results = [
+                {
+                    "id": m.id,
+                    "text": m.text,
+                    "memory_type": m.memory_type,
+                    "emotion": m.emotion,
+                    "importance": m.importance,
+                    "similarity_score": 0.85,
+                    "created_at": str(m.created_at) if m.created_at else None,
+                }
+                for m in matching[:k]
+            ]
+        
+        return memory_results

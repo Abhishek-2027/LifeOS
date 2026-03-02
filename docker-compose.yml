@@ -1,0 +1,37 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: lifeos_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: lifeos
+      POSTGRES_PASSWORD: lifeospassword
+      POSTGRES_DB: lifeos
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lifeos_backend
+    restart: on-failure
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://lifeos:lifeospassword@postgres/lifeos
+      - SECRET_KEY=your-production-secret
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=60
+      - OLLAMA_URL=http://localhost:11434
+    volumes:
+      - ./backend:/app
+
+volumes:
+  pgdata:

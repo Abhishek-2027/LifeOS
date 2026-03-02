@@ -13,3 +13,11 @@ class AgentService:
         result = await manager.run_all()
 
         return result
+
+    @staticmethod
+    async def run_email_agent(user_id: int):
+        return {"status": "Email agent started", "user_id": user_id}
+
+    @staticmethod
+    async def run_monitoring_agent(user_id: int):
+        return {"status": "Monitoring agent started", "user_id": user_id}

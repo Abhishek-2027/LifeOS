@@ -13,43 +13,84 @@ class ReasoningService:
 
     @staticmethod
     async def reason(db: AsyncSession, user_id, query: str):
+        try:
+            memories = await MemoryService.search_memory(
+                db=db,
+                user_id=user_id,
+                query=query,
+                k=5
+            )
+            if not memories:
+                return {"message": "No relevant memories found."}
+            context_builder = ContextBuilder()
+            context = context_builder.build(memories)
+            trend_analyzer = TrendAnalyzer()
+            trends = trend_analyzer.analyze(memories)
+            conflict_detector = ConflictDetector()
+            conflict = conflict_detector.detect(memories)
+            decision_engine = DecisionEngine()
+            decision = decision_engine.decide(trends, conflict)
+            llm = LLMReasoner()
+            explanation = llm.reason(context=context, trends=trends, conflict=conflict, decision=decision, user_query=query)
+            return {
+                "retrieved_memories": [m.text if hasattr(m, 'text') else str(m) for m in memories],
+                "trend_analysis": trends,
+                "conflict": conflict,
+                "decision_summary": decision,
+                "llm_explanation": explanation,
+            }
+        except Exception as e:
+            return {"error": str(e), "message": "Reasoning failed"}
 
-        # 🔹 1. Retrieve relevant memories from PostgreSQL
-        memories = await MemoryService.search_memory(
-            db=db,
-            user_id=user_id,
-            query=query,
-            k=5
-        )
+            # 🔹 1. Retrieve relevant memories from PostgreSQL
+            memories = await MemoryService.search_memory(
+                db=db,
+                user_id=user_id,
+                query=query,
+                k=5
+            )
 
-        if not memories:
-            return {"message": "No relevant memories found."}
+            if not memories:
+                return {"message": "No relevant memories found."}
 
-        # 🔹 2. Build structured context
-        context_builder = ContextBuilder()
-        context = context_builder.build(memories)
+            # 🔹 2. Build structured context
+            context_builder = ContextBuilder()
+            context = context_builder.build(memories)
 
-        # 🔹 3. Analyze trends
-        trend_analyzer = TrendAnalyzer()
-        trends = trend_analyzer.analyze(memories)
+            # 🔹 3. Analyze trends
+            trend_analyzer = TrendAnalyzer()
+            trends = trend_analyzer.analyze(memories)
 
-        # 🔹 4. Detect conflicts
-        conflict_detector = ConflictDetector()
-        conflict = conflict_detector.detect(memories)
+            # 🔹 4. Detect conflicts
+            conflict_detector = ConflictDetector()
+            conflict = conflict_detector.detect(memories)
 
-        # 🔹 5. Decision logic
-        decision_engine = DecisionEngine()
-        decision = decision_engine.decide(trends, conflict)
+            # 🔹 5. Decision logic
+            decision_engine = DecisionEngine()
+            decision = decision_engine.decide(trends, conflict)
 
-        # 🔹 6. Final LLM reasoning
-        llm = LLMReasoner()
-        explanation = llm.reason(
-            context=context,
-            trends=trends,
-            conflict=conflict,
-            decision=decision,
+            # 🔹 6. Final LLM reasoning
+            llm = LLMReasoner()
+            explanation = llm.reason(
+                context=context,
+                trends=trends,
+                conflict=conflict,
+                decision=decision,
+                user_query=query
+            )
+
+            return {
+                "retrieved_memories": [m.text if hasattr(m, 'text') else str(m) for m in memories],
+                "trend_analysis": trends,
+                "conflict": conflict,
+                "decision_summary": decision,
+                "llm_explanation": explanation,
+            }
+        except Exception as e:
+            return {"error": str(e), "message": "Reasoning failed"}
+
             user_query=query
-        )
+        
 
         return {
             "retrieved_memories": [m.text for m in memories],

@@ -27,3 +27,13 @@ class AnalyticsService:
         )
 
         return result.all()
+
+    @staticmethod
+    async def generate_dashboard(db: AsyncSession, user_id: int):
+        count = await AnalyticsService.memory_count(db, user_id)
+        dist = await AnalyticsService.emotion_distribution(db, user_id)
+        return {
+            "memory_count": count,
+            "emotion_distribution": [{"emotion": e[0], "count": e[1]} for e in dist] if dist else [],
+            "message": "Dashboard overview"
+        }
