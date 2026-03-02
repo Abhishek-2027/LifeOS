@@ -1,17 +1,18 @@
 # backend/app/services/memory_service.py
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import text
 from app.models.memory import Memory
-from app.schemas.memory_schema import MemoryCreate
 from app.memory_engine.embeddings import embed_text
-import numpy as np
 
 
 class MemoryService:
 
+    # -----------------------------
+    # Store Memory
+    # -----------------------------
     @staticmethod
-    async def add_memory(db: AsyncSession, user_id: int, memory_data: MemoryCreate):
+    async def add_memory(db: AsyncSession, user_id, memory_data):
 
         embedding = embed_text(memory_data.text)
 
@@ -21,7 +22,7 @@ class MemoryService:
             memory_type=memory_data.memory_type,
             emotion=memory_data.emotion,
             importance=memory_data.importance,
-            embedding=embedding
+            embedding=embedding,
         )
 
         db.add(memory)
@@ -30,19 +31,30 @@ class MemoryService:
 
         return memory
 
+    # -----------------------------
+    # Vector Similarity Search
+    # -----------------------------
     @staticmethod
-    async def search_memory(db: AsyncSession, user_id: int, query: str, k: int = 5):
+    async def search_memory(db: AsyncSession, user_id, query: str, k: int = 5):
 
-        query_vector = embed_text(query)
+        query_embedding = embed_text(query)
 
-        stmt = (
-            select(Memory)
-            .where(Memory.user_id == user_id)
-            .order_by(Memory.embedding.cosine_distance(query_vector))
-            .limit(k)
+        stmt = text("""
+            SELECT *,
+            embedding <=> :embedding AS distance
+            FROM memories
+            WHERE user_id = :user_id
+            ORDER BY embedding <=> :embedding
+            LIMIT :k
+        """)
+
+        result = await db.execute(
+            stmt,
+            {
+                "embedding": query_embedding,
+                "user_id": str(user_id),
+                "k": k,
+            },
         )
 
-        result = await db.execute(stmt)
-        memories = result.scalars().all()
-
-        return memories
+        return result.fetchall()

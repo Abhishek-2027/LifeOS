@@ -1,18 +1,35 @@
 from langchain_community.chat_models import ChatOllama
 
+
 class LLMReasoner:
 
     def __init__(self):
-        self.llm = ChatOllama(model="llama3", temperature=0.3)
+        self.llm = ChatOllama(
+            model="llama3",
+            temperature=0.3
+        )
 
-    def reason(self, context):
+    def reason(self, context, trends, conflict, decision, user_query):
 
         prompt = f"""
-        You are a life decision intelligence system.
-        Analyze this context:
+        You are LifeOS, a cognitive decision intelligence system.
+
+        User Query:
+        {user_query}
+
+        Retrieved Memory Context:
         {context}
 
-        Provide structured insight.
+        Behavioral Trends:
+        {trends}
+
+        Conflict Analysis:
+        {conflict}
+
+        Preliminary Decision:
+        {decision}
+
+        Provide deep, structured reasoning and actionable advice.
         """
 
         return self.llm.invoke(prompt).content

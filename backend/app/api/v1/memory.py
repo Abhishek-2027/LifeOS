@@ -17,9 +17,9 @@ async def add_memory(
     current_user=Depends(get_current_user)
 ):
     return await MemoryService.add_memory(
-        db,
-        current_user.id,
-        memory
+        db=db,
+        user_id=current_user.id,
+        memory_data=memory
     )
 
 
@@ -29,8 +29,9 @@ async def search_memory(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    return await MemoryService.search(
-        db,
-        current_user.id,
-        query
+    return await MemoryService.search_memory(
+        db=db,
+        user_id=current_user.id,
+        query=query,
+        k=5
     )

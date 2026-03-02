@@ -17,6 +17,10 @@ app = FastAPI(
     version="1.0.0"
 )
 
+@app.get("/")
+async def root():
+    return {"status": "LifeOS backend running"}
+
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(memory.router)

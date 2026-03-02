@@ -1,23 +1,27 @@
-# backend/app/models/memory.py
-
-from sqlalchemy import Column, Integer, Text, String, Float, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, String, Float, Text, ForeignKey, DateTime
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from pgvector.sqlalchemy import Vector
-from app.models.base import Base, TimestampMixin
+from sqlalchemy.sql import func
+import uuid
+
+from app.models.base import Base
 
 
-class Memory(Base, TimestampMixin):
+class Memory(Base):
     __tablename__ = "memories"
 
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"))
 
     text = Column(Text, nullable=False)
-    memory_type = Column(String(50), nullable=False)  # episodic / semantic / document / email
+    memory_type = Column(String, nullable=False)
 
-    embedding = Column(Vector(768))  # adjust dimension to your model
+    embedding = Column(Vector(384))  # IMPORTANT
 
-    emotion = Column(String(100))
+    emotion = Column(String)
     importance = Column(Float, default=0.5)
 
-    user = relationship("User", back_populates="memories")
+    meta_data = Column(JSONB)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
