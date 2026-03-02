@@ -11,12 +11,14 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/register", response_model=TokenResponse)
 async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
-    return await AuthService.register_user(db, user)
+    registered_user = await AuthService.register(db, user)
+    token = await AuthService.login(db, user.email, user.password)
+    return token
 
 
 @router.post("/login", response_model=TokenResponse)
 async def login(user: UserLogin, db: AsyncSession = Depends(get_db)):
-    token = await AuthService.login_user(db, user)
+    token = await AuthService.login(db, user.email, user.password)
     if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

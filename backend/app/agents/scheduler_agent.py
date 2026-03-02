@@ -18,6 +18,6 @@ class SchedulerAgent(BaseAgent):
         Based on user productivity patterns, suggest daily focus strategy.
         """
 
-        response = llm.invoke(prompt)
+        output = llm.generate(prompt)
 
-        return {"SchedulerAgent": response.content}
+        return {"SchedulerAgent": output}

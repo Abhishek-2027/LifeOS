@@ -18,6 +18,6 @@ class MonitoringAgent(BaseAgent):
         Analyze behavioral patterns and suggest improvements.
         """
 
-        response = llm.invoke(prompt)
+        output = llm.generate(prompt)
 
-        return {"MonitoringAgent": response.content}
+        return {"MonitoringAgent": output}

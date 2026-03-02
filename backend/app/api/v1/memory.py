@@ -16,11 +16,16 @@ async def add_memory(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    return await MemoryService.add_memory(
-        db=db,
-        user_id=current_user.id,
-        memory_data=memory
-    )
+    try:
+        result = await MemoryService.add_memory(
+            db=db,
+            user_id=current_user.id,
+            memory_data=memory
+        )
+        return result
+    except Exception as e:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/search")

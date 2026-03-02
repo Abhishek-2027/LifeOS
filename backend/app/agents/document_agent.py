@@ -3,11 +3,11 @@
 from app.agents.base_agent import BaseAgent
 from app.agents.context_builder import ContextBuilder
 from app.agents.llm_config import get_llm
-from app.agents.tools import get_tools
 from app.agents.memory_sync import MemorySync
 
-from langchain_core.messages import HumanMessage
-from langgraph.prebuilt import create_react_agent
+# stripping out `langchain_core`/`langgraph` imports to avoid
+# dependency conflicts; we now call the LLM directly
+
 
 
 class DocumentAgent(BaseAgent):
@@ -19,13 +19,6 @@ class DocumentAgent(BaseAgent):
         context = await context_builder.build("documents and tasks")
 
         llm = get_llm()
-        tools = get_tools()
-
-        # Create modern LangGraph ReAct agent
-        agent = create_react_agent(
-            model=llm,
-            tools=tools
-        )
 
         prompt = f"""
 You are a cognitive assistant that helps manage documents and tasks.
@@ -37,13 +30,8 @@ Based on this user memory context:
 Suggest document-related improvements or actions.
 """
 
-        # Invoke agent asynchronously
-        result = await agent.ainvoke(
-            {"messages": [HumanMessage(content=prompt)]}
-        )
-
-        # Get final model response
-        output = result["messages"][-1].content
+        # call the LLM directly
+        output = llm.generate(prompt)
 
         # Sync memory
         sync = MemorySync()

@@ -12,32 +12,46 @@ class AuthService:
 
     @staticmethod
     async def register(db: AsyncSession, user_data: UserCreate):
-        result = await db.execute(select(User).where(User.email == user_data.email))
-        existing_user = result.scalar_one_or_none()
+        """Register a new user"""
+        try:
+            # For SQLite + aiosqlite, we need to handle the async operations carefully
+            result = await db.execute(select(User).where(User.email == user_data.email))
+            existing_user = result.scalar_one_or_none()
 
-        if existing_user:
-            raise HTTPException(status_code=400, detail="Email already registered")
+            if existing_user:
+                raise HTTPException(status_code=400, detail="Email already registered")
 
-        user = User(
-            email=user_data.email,
-            hashed_password=hash_password(user_data.password)
-        )
+            user = User(
+                email=user_data.email,
+                hashed_password=hash_password(user_data.password)
+            )
 
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
+            db.add(user)
+            await db.commit()
+            await db.refresh(user)
 
-        return user
+            return user
+        except HTTPException:
+            raise
+        except Exception as e:
+            await db.rollback()
+            raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
 
     @staticmethod
     async def login(db: AsyncSession, email: str, password: str):
-        result = await db.execute(select(User).where(User.email == email))
-        user = result.scalar_one_or_none()
+        """Login a user and return access token"""
+        try:
+            result = await db.execute(select(User).where(User.email == email))
+            user = result.scalar_one_or_none()
 
-        if not user or not verify_password(password, user.hashed_password):
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                detail="Invalid credentials")
+            if not user or not verify_password(password, user.hashed_password):
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                    detail="Invalid credentials")
 
-        token = create_access_token({"sub": str(user.id)})
+            token = create_access_token({"sub": str(user.id)})
 
-        return {"access_token": token, "token_type": "bearer"}
+            return {"access_token": token, "token_type": "bearer"}
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")

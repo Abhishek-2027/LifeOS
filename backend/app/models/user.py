@@ -13,8 +13,28 @@ class User(Base, TimestampMixin):
     hashed_password = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True)
 
-    # Relationships
-    memories = relationship("Memory", back_populates="user", cascade="all, delete")
-    documents = relationship("Document", back_populates="user", cascade="all, delete")
-    emails = relationship("Email", back_populates="user", cascade="all, delete")
-    agent_logs = relationship("AgentLog", back_populates="user", cascade="all, delete")
+    # Relationships - using lazy='select' for async compatibility
+    memories = relationship(
+        "Memory",
+        back_populates="user",
+        cascade="all, delete",
+        foreign_keys="Memory.user_id"
+    )
+    documents = relationship(
+        "Document",
+        back_populates="user",
+        cascade="all, delete",
+        foreign_keys="Document.user_id"
+    )
+    emails = relationship(
+        "Email",
+        back_populates="user",
+        cascade="all, delete",
+        foreign_keys="Email.user_id"
+    )
+    agent_logs = relationship(
+        "AgentLog",
+        back_populates="user",
+        cascade="all, delete",
+        foreign_keys="AgentLog.user_id"
+    )

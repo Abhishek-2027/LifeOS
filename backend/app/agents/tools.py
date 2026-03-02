@@ -1,17 +1,21 @@
 # backend/app/agents/tools.py
 
-from langchain.tools import tool
+"""Lightweight replacement for langchain's tool decorator.
 
+The ``@tool`` decorator previously imported from ``langchain.tools``
+added unnecessary requirements.  Our agents don't really need its
+capabilities (serialization, description metadata, etc.), so we simply
+use plain functions.
+"""
 
-@tool
+# No external dependencies are required for these helpers.
+
 def create_task(task: str) -> str:
     """
     Create a new task in the system with the provided task description.
     """
     return f"Task created: {task}"
 
-
-@tool
 def send_notification(message: str) -> str:
     """
     Send a notification with the given message to the user.
@@ -19,7 +23,6 @@ def send_notification(message: str) -> str:
     return f"Notification sent: {message}"
 
 
-@tool
 def prioritize_item(item: str) -> str:
     """
     Mark the given item as high priority in the system.

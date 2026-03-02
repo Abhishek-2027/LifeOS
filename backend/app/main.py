@@ -11,11 +11,27 @@ from app.api.v1 import (
     dashboard,
     agents
 )
+from app.core.database import engine
+from app.models.base import Base
+
+# Import all models to register them with SQLAlchemy
+from app.models import (  # noqa: F401
+    User,
+    Memory,
+    Document,
+    Email,
+    AgentLog,
+)
 
 app = FastAPI(
     title="LifeOS SaaS API",
     version="1.0.0"
 )
+
+@app.on_event("startup")
+async def startup():
+    """Application startup - tables should be created by migrations"""
+    print("LifeOS backend is starting...")
 
 @app.get("/")
 async def root():
